@@ -1,7 +1,8 @@
 import React from 'react';
 
-function Todo({ value, id, handleDelete = () => { } }) {
-    return <li>{value} <button onClick={() => handleDelete(id)}>x</button></li>
+const Todo = ({ value, id, isEditing, handleSelect = () => { }, handleChange = () => { }, handleDelete = () => { } }) => {
+    const valueEl = (!isEditing) ? <input type="text" defaultValue={value} onKeyUp={handleChange} /> : value;
+    return <li onDoubleClick={() => handleSelect(id)}>{valueEl} <button onClick={() => handleDelete(id)}>x</button></li>
 }
 
 class Todos extends React.Component {
@@ -11,6 +12,7 @@ class Todos extends React.Component {
             todos: [],
             newValue: '',
             nextKey: 0,
+            editKey: undefined,
         }
     }
 
@@ -43,7 +45,7 @@ class Todos extends React.Component {
         return (<div>
             <h2>TODOs</h2>
             <ul>
-                {todos.map(({ value, key }) => <Todo value={value} id={key} key={key} handleDelete={this.handleDelete} />)}
+                {todos.map(({ value, key }) => <Todo value={value} id={key} key={key} handleDelete={this.handleDelete} isEditing={this.state.editKey === key} />)}
             </ul>
             <form onSubmit={this.handleSubmit}>
                 <input type="text" placeholder="Add new item" value={this.state.newValue} onChange={this.handleChange} />
