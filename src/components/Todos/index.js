@@ -1,8 +1,22 @@
 import React from 'react';
 
-const Todo = ({ value, id, isEditing, handleSelect = () => { }, handleChange = () => { }, handleDelete = () => { } }) => {
-    const valueEl = (!isEditing) ? <input type="text" defaultValue={value} onKeyUp={handleChange} /> : value;
-    return <li onDoubleClick={() => handleSelect(id)}>{valueEl} <button onClick={() => handleDelete(id)}>x</button></li>
+const Todo = ({
+    value,
+    id,
+    isEditing,
+    handleSelect = () => { },
+    handleChange = () => { },
+    handleKeyUp = () => { },
+    handleDelete = () => { }
+}) => {
+    let valueEl = value;
+    if (isEditing) {
+        valueEl = <input type="text" defaultValue={value} onChange={handleChange} onKeyUp={handleKeyUp} />;
+    }
+    return (<li onDoubleClick={() => handleSelect(id)}>
+        {valueEl}
+        <button onClick={() => handleDelete(id)}>x</button>
+    </li>)
 }
 
 class Todos extends React.Component {
@@ -39,13 +53,47 @@ class Todos extends React.Component {
         });
     }
 
+    handleSelect = (key) => {
+        this.setState((state) => {
+            return {
+                editKey: key,
+            };
+        });
+    }
+
+    handleItemChange = (event) => {
+        const value = event.target.value;
+        this.setState((state) => {
+            return {
+                todos: state.todos.map((todo) => {
+                    if (todo.key === state.editKey) {
+                        todo.value = value;
+                    }
+                    return todo;
+                }),
+            };
+        });
+    }
+
+    handleItemKeyUp = (event) => {
+        if (event.key === 'Enter') {
+            this.setState({ editKey: undefined });
+        }
+    }
+
     render() {
         const { todos } = this.state;
 
         return (<div>
             <h2>TODOs</h2>
             <ul>
-                {todos.map(({ value, key }) => <Todo value={value} id={key} key={key} handleDelete={this.handleDelete} isEditing={this.state.editKey === key} />)}
+                {todos.map(({ value, key }) => <Todo value={value} id={key} key={key}
+                    handleDelete={this.handleDelete}
+                    handleSelect={this.handleSelect}
+                    isEditing={this.state.editKey === key}
+                    handleChange={this.handleItemChange}
+                    handleKeyUp={this.handleItemKeyUp}
+                />)}
             </ul>
             <form onSubmit={this.handleSubmit}>
                 <input type="text" placeholder="Add new item" value={this.state.newValue} onChange={this.handleChange} />
